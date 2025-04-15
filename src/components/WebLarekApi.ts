@@ -1,46 +1,31 @@
-import { IWebLarekApi, IProduct, IOrder, IOrderResult } from '../types';
+import { Api, ApiListResponse } from './base/api';
+import { IOrder, IOrderResult, IProduct, IWebLarekApi } from '../types';
 
-export class WebLarekApi implements IWebLarekApi {
-	private readonly baseUrl: string;
-	private readonly options: RequestInit;
+export class WebLarekApi extends Api implements IWebLarekApi {
+	readonly cdn: string;
 
-	constructor(baseUrl: string, options: RequestInit = {}) {
-		this.baseUrl = baseUrl;
-		this.options = {
-			headers: {
-				'Content-Type': 'application/json',
-				...(options.headers as object ?? {})
-			}
-		};
+	constructor(cdn: string, baseUrl: string, options: RequestInit = {}) {
+		super(baseUrl, options);
+		this.cdn = cdn;
 	}
 
-	async getProductList(): Promise<IProduct[]> {
-		const response = await fetch(`${this.baseUrl}/product`, {
-			...this.options,
-			method: 'GET'
-		});
-		return this.checkResponse(response);
+	getProductList(): Promise<IProduct[]> {
+		return this.get('/product/').then((data: ApiListResponse<IProduct>) =>
+			data.items.map((item) => ({
+				...item,
+				image: this.cdn + item.image,
+			}))
+		);
 	}
 
-	async getProductItem(id: string): Promise<IProduct> {
-		const response = await fetch(`${this.baseUrl}/product/${id}`, {
-			...this.options,
-			method: 'GET'
-		});
-		return this.checkResponse(response);
+	getProductInfo(id: string): Promise<IProduct> {
+		return this.get(`/product/${id}`).then((item: IProduct) => ({
+			...item,
+			image: this.cdn + item.image,
+		}));
 	}
 
-	async orderProducts(order: IOrder): Promise<IOrderResult> {
-		const response = await fetch(`${this.baseUrl}/order`, {
-			...this.options,
-			method: 'POST',
-			body: JSON.stringify(order)
-		});
-		return this.checkResponse(response);
-	}
-
-	private checkResponse(response: Response): Promise<any> {
-		if (response.ok) return response.json();
-		throw new Error(response.statusText);
+	orderProducts(order: IOrder): Promise<IOrderResult> {
+		return this.post('/order', order).then((data: IOrderResult) => data);
 	}
 }

@@ -10,6 +10,10 @@ export function isEmpty(value: any): boolean {
     return value === null || value === undefined;
 }
 
+export function formatNumber(x: number, sep = ' ') {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, sep);
+}
+
 export type SelectorCollection<T> = string | NodeListOf<Element> | T[];
 
 export function ensureAllElements<T extends HTMLElement>(selectorElement: SelectorCollection<T>, context: HTMLElement = document as unknown as HTMLElement): T[] {
@@ -61,12 +65,12 @@ export function bem(block: string, element?: string, modifier?: string): { name:
 
 export function getObjectProperties(obj: object, filter?: (name: string, prop: PropertyDescriptor) => boolean): string[] {
     return Object.entries(
-        Object.getOwnPropertyDescriptors(
-            Object.getPrototypeOf(obj)
-        )
+      Object.getOwnPropertyDescriptors(
+        Object.getPrototypeOf(obj)
+      )
     )
-        .filter(([name, prop]: [string, PropertyDescriptor]) => filter ? filter(name, prop) : (name !== 'constructor'))
-        .map(([name, prop]) => name);
+      .filter(([name, prop]: [string, PropertyDescriptor]) => filter ? filter(name, prop) : (name !== 'constructor'))
+      .map(([name, prop]) => name);
 }
 
 /**
@@ -95,7 +99,7 @@ export function getElementData<T extends Record<string, unknown>>(el: HTMLElemen
 export function isPlainObject(obj: unknown): obj is object {
     const prototype = Object.getPrototypeOf(obj);
     return  prototype === Object.getPrototypeOf({}) ||
-        prototype === null;
+      prototype === null;
 }
 
 export function isBoolean(v: unknown): v is boolean {
@@ -108,11 +112,11 @@ export function isBoolean(v: unknown): v is boolean {
  * в интернет можно найти более полные реализации
  */
 export function createElement<
-    T extends HTMLElement
-    >(
-    tagName: keyof HTMLElementTagNameMap,
-    props?: Partial<Record<keyof T, string | boolean | object>>,
-    children?: HTMLElement | HTMLElement []
+  T extends HTMLElement
+>(
+  tagName: keyof HTMLElementTagNameMap,
+  props?: Partial<Record<keyof T, string | boolean | object>>,
+  children?: HTMLElement | HTMLElement []
 ): T {
     const element = document.createElement(tagName) as T;
     if (props) {
